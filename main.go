@@ -21,16 +21,17 @@ func init() {
 	for Session == nil {
 		time.Sleep(time.Second * 5)
 		Session, err = db.Connect(db.ConnectOpts{
-			Address:  "192.168.99.100:28015",
-			Database: "test",
-			MaxIdle:  1,
-			MaxOpen:  2,
+			Address: "192.168.99.100:28015",
+			MaxIdle: 1,
+			MaxOpen: 2,
 		})
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
 	}
 	// ignore error for create
+	db.DBCreate("bourbaki").Run(Session)
+	Session.Use("bourbaki")
 	db.TableCreate("user", db.TableCreateOpts{PrimaryKey: "email"}).Run(Session)
 }
 
