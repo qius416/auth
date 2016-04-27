@@ -21,16 +21,22 @@ func init() {
 	for Session == nil {
 		time.Sleep(time.Second * 5)
 		Session, err = db.Connect(db.ConnectOpts{
-			Address:  "192.168.99.100:28015",
-			Database: "test",
-			MaxIdle:  1,
-			MaxOpen:  2,
+			Address: "db:28015",
+			MaxIdle: 1,
+			MaxOpen: 2,
 		})
+		// test purpose for clustered db
+		// session, err = db.Connect(db.ConnectOpts{
+		// 	Addresses:     []string{"db1:28015", "db2:28015"},
+		// 	DiscoverHosts: true,
+		// })
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
 	}
 	// ignore error for create
+	db.DBCreate("bourbaki").Run(Session)
+	Session.Use("bourbaki")
 	db.TableCreate("user", db.TableCreateOpts{PrimaryKey: "email"}).Run(Session)
 }
 
@@ -38,7 +44,7 @@ func main() {
 	router := httprouter.New()
 	router.POST("/signup", signup)
 	router.POST("/login", login)
-	log.Fatal(http.ListenAndServe("localhost:8000", router))
+	log.Fatal(http.ListenAndServe("0.0.0.0:80", router))
 }
 
 func signup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
